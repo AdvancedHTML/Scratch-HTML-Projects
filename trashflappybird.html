@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flappy Bird</title>
+  <style>
+    canvas {
+      background: #70c5ce;
+      display: block;
+      margin: 0 auto;
+    }#score {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: blue;
+}
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="800" height="600"></canvas>
+  <div id="score"></div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const gravity = 0.5;
+    const flapStrength = -10;
+    let gameOver = false;
+    let score = 0;
+    let scoreLimit = false; // Added scoreLimit variable
+
+    const bird = {
+      x: 50,
+      y: canvas.height / 2,
+      velocity: 0,
+      color: '#f9eb16',
+      radius: 20,
+      draw: function() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+      },
+      flap: function() {
+        this.velocity = flapStrength;
+      }
+    };
+
+    const pipes = {
+      position: [],
+      topColor: '#44db5e',
+      bottomColor: '#1696f5',
+      width: 50,
+      gap: 150,
+      draw: function() {
+        this.position.forEach(pipe => {
+          ctx.fillStyle = this.topColor;
+          ctx.fillRect(pipe.x, 0, this.width, pipe.topHeight);
+          ctx.fillStyle = this.bottomColor;
+          ctx.fillRect(pipe.x, pipe.bottomStart, this.width, canvas.height - pipe.bottomStart);
+        });
+      },
+      update: function() {
+        if (gameOver) return;
+
+        this.position.forEach(pipe => {
+          pipe.x -= 2;
+
+          if (bird.x > pipe.x && bird.x < pipe.x + this.width) {
+            if (bird.y < pipe.topHeight || bird.y > pipe.bottomStart) {
+              gameOver = true;
+            } else {
+              if (!scoreLimit) {
+                score += 2; // Increase score by 2 when passing the obstacle
+                scoreLimit = true;
+              }
+            }
+          }
+
+          if (pipe.x + this.width < 0) {
+            this.position.shift();
+            scoreLimit = false; // Reset scoreLimit when the obstacle passes
+          }
+        });
+
+        if (this.position.length < 2 && this.position[this.position.length - 1].x < canvas.width - 300) {
+          this.generate();
+        }
+      },
+      generate: function() {
+        const topHeight = Math.random() * (canvas.height - this.gap - 100) + 100;
+        const bottomStart = topHeight + this.gap;
+        this.position.push({
+          x: canvas.width,
+          topHeight: topHeight,
+          bottomStart: bottomStart
+        });
+      }
+    };
+
+    document.addEventListener('keydown', function(e) {
+      if (e.code === 'Space') {
+        bird.flap();
+      }
+      if (e.key === 'a' && gameOver) {
+        gameOver = false;
+        bird.y = canvas.height / 2;
+        bird.velocity = 0;
+        pipes.position = [];
+        score = 0;
+        scoreLimit = false;
+      }
+    });
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      bird.velocity += gravity;
+      bird.y += bird.velocity;
+
+      if (bird.y > canvas.height) {
+        gameOver = true;
+      }
+
+      bird.draw();
+      pipes.draw();
+      pipes.update();
+
+      document.getElementById('score').innerText = 'Score: ' + score;
+
+      if (!gameOver) {
+        requestAnimationFrame(gameLoop);
+      } else {
+        ctx.font = '30px Arial';
+        ctx.fillText('Game Over - Total Score: ' + score, canvas.width / 2 - 160, canvas.height / 2);
+      }
+    }
+
+    pipes.generate();
+    gameLoop();
+  </script>
+</body>
+</html>
