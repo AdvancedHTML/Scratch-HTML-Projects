@@ -1,15 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your File Hosting Website</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub File Downloader</title>
 </head>
 <body>
-<h1>Welcome to Your File Hosting Website</h1>
-<h2>Available Downloads:</h2>
-<ul id="fileList">
-</ul>
-<script src="script.js"></script>
+    <h1>GitHub File Downloader</h1>
+    <button id="showFilesButton">Show Files</button>
+    <ul id="fileList" style="display: none;"></ul>
+
+    <script>
+        const files = [
+            { name: 'File 1', url: 'https://example.com/file1.txt' },
+            { name: 'File 2', url: 'https://example.com/file2.txt' },
+            { name: 'File 3', url: 'https://example.com/file3.txt' }
+        ];
+
+        const showFilesButton = document.getElementById('showFilesButton');
+        const fileList = document.getElementById('fileList');
+
+        showFilesButton.addEventListener('click', function() {
+            fileList.innerHTML = '';
+            files.forEach(file => {
+                const listItem = document.createElement('li');
+                const downloadLink = document.createElement('a');
+                downloadLink.href = file.url;
+                downloadLink.textContent = file.name;
+                downloadLink.setAttribute('download', '');
+                listItem.appendChild(downloadLink);
+                fileList.appendChild(listItem);
+            });
+
+            fileList.style.display = 'block';
+        });
+    </script>
 </body>
 </html>
